@@ -5,6 +5,7 @@ import _ from "lodash";
 import DetailRowView from "./DetailRowView/DetailRowView";
 import ModeSelector from "./ModeSelector/ModeSelector";
 import ReactPaginate from "react-paginate";
+import TableSearch from "./TableSearch/TableSearch";
 
 class App extends Component {
   state = {
@@ -15,6 +16,7 @@ class App extends Component {
     sortField: "id",
     row: null,
     currentPage: 0,
+    search: "",
   };
 
   async fetchData(url) {
@@ -39,6 +41,12 @@ class App extends Component {
   };
   onRowSelect = (row) => {
     this.setState({ row });
+  };
+  searchHandler = (search) => {
+    this.setState({
+      search,
+      currentPage: 0,
+    });
   };
   modeSelectHandler = (url) => {
     // console.log(url);
@@ -86,18 +94,22 @@ class App extends Component {
     const pageCount = Math.ceil(filteredData.length / pageSize);
 
     const displayData = _.chunk(filteredData, pageSize)[this.state.currentPage];
+
     return (
       <div className="container">
         {this.state.isLoading ? (
           <Loader />
         ) : (
-          <Table
-            data={displayData}
-            onSort={this.onSort}
-            sort={this.state.sort}
-            sortField={this.state.sortField}
-            onRowSelect={this.onRowSelect}
-          />
+          <React.Fragment>
+            <TableSearch onSearch={this.searchHandler} />
+            <Table
+              data={displayData}
+              onSort={this.onSort}
+              sort={this.state.sort}
+              sortField={this.state.sortField}
+              onRowSelect={this.onRowSelect}
+            />
+          </React.Fragment>
         )}
         {this.state.data.length > pageSize ? (
           <ReactPaginate
@@ -117,6 +129,7 @@ class App extends Component {
             nextClassName="page-item"
             previousLinkClassName="page-link"
             nextLinkClassName="page-link"
+            forcePage={this.state.currentPage}
           />
         ) : null}
         {this.state.row ? <DetailRowView person={this.state.row} /> : null}
